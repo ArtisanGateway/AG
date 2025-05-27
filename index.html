@@ -1143,7 +1143,7 @@
     
     .wallet-actions {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(2, 1fr));
       gap: 10px;
       margin-bottom: 20px;
     }
@@ -1761,10 +1761,10 @@
             <input type="tel" id="artisanPhone" placeholder="Enter your phone number" required aria-required="true">
             <div class="form-error" id="artisanPhoneError">Please enter a valid Nigerian phone number</div>
           </div>
-		  <div class="form-group">
-            <label for="clientNin">NIN (National Identification Number)</label>
-            <input type="text" id="clientNin" placeholder="Enter your 11-digit NIN" required aria-required="true">
-            <div class="form-error" id="clientNinError">Please enter a valid 11-digit NIN</div>
+      <div class="form-group">
+            <label for="artisanNin">NIN (National Identification Number)</label>
+            <input type="text" id="artisanNin" placeholder="Enter your 11-digit NIN" required aria-required="true">
+            <div class="form-error" id="artisanNinError">Please enter a valid 11-digit NIN</div>
           </div>
           <div class="form-group">
             <label for="artisanService">Service Type</label>
@@ -2060,7 +2060,12 @@
         this.typingTimeout = null;
         this.darkMode = localStorage.getItem('darkMode') === 'true';
         this.pendingVerification = null;
-        this.verificationCode = '123456'; // In a real app, this would be generated dynamically
+        this.verificationCode = null;
+        
+        // Twilio credentials (Note: In production, these should be handled server-side)
+        this.twilioAccountSid = 'AC341d0bb245ce35bd643794477668ec15';
+        this.twilioAuthToken = 'd40d2f2743749748ac9c4ca6bfee3ad9';
+        this.twilioPhoneNumber = '+1987654321'; // Your Twilio phone number
         
         // Initialize app
         this.init();
@@ -3023,6 +3028,7 @@
         };
         
         this.showVerificationModal(phone);
+        this.sendVerificationCode(phone);
       }
       
       artisanSignup() {
@@ -3033,6 +3039,7 @@
         const location = document.getElementById('artisanLocation').value;
         const password = document.getElementById('artisanPassword').value;
         const confirm = document.getElementById('artisanConfirm').value;
+        const nin = document.getElementById('artisanNin').value;
         
         // Reset errors
         document.querySelectorAll('#artisanSignupForm .form-error').forEach(el => {
@@ -3049,6 +3056,11 @@
         
         if (!phone || !this.validatePhone(phone)) {
           document.getElementById('artisanPhoneError').style.display = 'block';
+          isValid = false;
+        }
+        
+        if (!nin || !this.validateNin(nin)) {
+          document.getElementById('artisanNinError').style.display = 'block';
           isValid = false;
         }
         
@@ -3087,10 +3099,12 @@
           service,
           experience: parseInt(experience),
           location,
-          password
+          password,
+          nin
         };
         
         this.showVerificationModal(phone);
+        this.sendVerificationCode(phone);
       }
       
       showVerificationModal(phone) {
@@ -3098,9 +3112,43 @@
         this.showModal('verificationModal');
       }
       
-      sendVerificationCode() {
-        // In a real app, this would send the code via SMS
-        this.showNotification('Verification code resent');
+      async sendVerificationCode(phone) {
+        // Generate a 6-digit code
+        this.verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+        
+        try {
+          // In a real app, you would call your backend API to send the SMS
+          // This is a mock implementation
+          
+          // Simulate API call to Twilio
+          console.log(`Sending verification code to ${phone}`);
+          
+          // Mock Twilio API call
+          const response = await this.mockTwilioSendSMS(
+            phone,
+            `Your Artisan Gateway verification code is: ${this.verificationCode}`
+          );
+          
+          if (response.success) {
+            this.showNotification('Verification code sent!');
+          } else {
+            this.showNotification('Failed to send verification code. Please try again.');
+          }
+        } catch (error) {
+          console.error('Error sending verification code:', error);
+          this.showNotification('Error sending verification code. Please try again.');
+        }
+      }
+      
+      // Mock Twilio SMS sending function
+      mockTwilioSendSMS(to, body) {
+        return new Promise((resolve) => {
+          // Simulate network delay
+          setTimeout(() => {
+            console.log(`Mock SMS sent to ${to}: ${body}`);
+            resolve({ success: true });
+          }, 1000);
+        });
       }
       
       verifyCode() {
@@ -3144,6 +3192,7 @@
           newUser.service = userData.service;
           newUser.experience = userData.experience;
           newUser.location = userData.location;
+          newUser.nin = userData.nin;
         }
         
         users.push(newUser);
