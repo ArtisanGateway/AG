@@ -1143,7 +1143,7 @@
     
     .wallet-actions {
       display: grid;
-      grid-template-columns: repeat(2, 1fr));
+      grid-template-columns: repeat(2, 1fr);
       gap: 10px;
       margin-bottom: 20px;
     }
@@ -1431,7 +1431,7 @@
             <button class="filter-reset" id="resetFilters">Reset</button>
           </div>
           <div class="filter-options">
-            <div class="filter-group">
+            <div class="form-group">
               <label for="ratingFilter">Minimum Rating</label>
               <select id="ratingFilter">
                 <option value="0">Any rating</option>
@@ -1440,7 +1440,7 @@
                 <option value="4.5">4.5+ stars</option>
               </select>
             </div>
-            <div class="filter-group">
+            <div class="form-group">
               <label for="distanceFilter">Max Distance</label>
               <select id="distanceFilter">
                 <option value="0">Any distance</option>
@@ -1449,7 +1449,7 @@
                 <option value="20">20 km</option>
               </select>
             </div>
-            <div class="filter-group">
+            <div class="form-group">
               <label for="priceFilter">Price Range</label>
               <select id="priceFilter">
                 <option value="0">Any price</option>
@@ -1726,7 +1726,7 @@
           </div>
           <div class="form-group">
             <label for="clientPhone">Phone Number</label>
-            <input type="tel" id="clientPhone" placeholder="Enter your phone number" required aria-required="true">
+            <input type="tel" id="clientPhone" placeholder="Enter your phone number (e.g., 08012345678)" required aria-required="true">
             <div class="form-error" id="clientPhoneError">Please enter a valid Nigerian phone number</div>
           </div>
           <div class="form-group">
@@ -1758,10 +1758,10 @@
           </div>
           <div class="form-group">
             <label for="artisanPhone">Phone Number</label>
-            <input type="tel" id="artisanPhone" placeholder="Enter your phone number" required aria-required="true">
+            <input type="tel" id="artisanPhone" placeholder="Enter your phone number (e.g., 08012345678)" required aria-required="true">
             <div class="form-error" id="artisanPhoneError">Please enter a valid Nigerian phone number</div>
           </div>
-      <div class="form-group">
+		  <div class="form-group">
             <label for="artisanNin">NIN (National Identification Number)</label>
             <input type="text" id="artisanNin" placeholder="Enter your 11-digit NIN" required aria-required="true">
             <div class="form-error" id="artisanNinError">Please enter a valid 11-digit NIN</div>
@@ -1925,13 +1925,15 @@
     <div class="modal-content">
       <div class="modal-header">
         <h3>Verify Your Phone</h3>
-        <button class="modal-close" id="closeVerificationModal" aria-label="Close modal">&times;</button>
+        <button class="modal-close" id="closeVerificationModal" aria-label="Close modal">
+          <i class="fas fa-arrow-left"></i>
+        </button>
       </div>
       <div class="modal-body">
         <p>We've sent a 6-digit verification code to your phone number <span id="verificationPhone"></span></p>
         <div class="form-group">
           <label for="verificationCode">Verification Code</label>
-          <input type="text" id="verificationCode" placeholder="Enter 6-digit code" maxlength="6">
+          <input type="text" id="verificationCode" placeholder="Enter 6-digit code" maxlength="6" inputmode="numeric" pattern="[0-9]*">
           <div class="form-error" id="verificationCodeError">Please enter the 6-digit code</div>
         </div>
         <p id="resendCodeText">Didn't receive code? <a href="#" id="resendCode">Resend code</a></p>
@@ -2060,12 +2062,7 @@
         this.typingTimeout = null;
         this.darkMode = localStorage.getItem('darkMode') === 'true';
         this.pendingVerification = null;
-        this.verificationCode = null;
-        
-        // Twilio credentials (Note: In production, these should be handled server-side)
-        this.twilioAccountSid = 'AC341d0bb245ce35bd643794477668ec15';
-        this.twilioAuthToken = 'd40d2f2743749748ac9c4ca6bfee3ad9';
-        this.twilioPhoneNumber = '+1987654321'; // Your Twilio phone number
+        this.generatedVerificationCode = ''; // Stores the generated code for client-side simulation
         
         // Initialize app
         this.init();
@@ -2140,6 +2137,12 @@
         // Theme toggle
         this.themeToggle = document.getElementById('themeToggle');
         this.themeStatus = document.getElementById('themeStatus');
+
+        // Verification modal elements
+        this.closeVerificationModalBtn = document.getElementById('closeVerificationModal');
+        this.verifyCodeBtn = document.getElementById('verifyCodeBtn');
+        this.resendCodeLink = document.getElementById('resendCode');
+        this.cancelVerificationBtn = document.getElementById('cancelVerification');
       }
       
       setupEventListeners() {
@@ -2233,19 +2236,29 @@
         document.getElementById('closeBookingModal').addEventListener('click', () => this.hideModal('bookingModal'));
         document.getElementById('closeAddMoneyModal').addEventListener('click', () => this.hideModal('addMoneyModal'));
         document.getElementById('closeForgotPasswordModal').addEventListener('click', () => this.hideModal('forgotPasswordModal'));
-        document.getElementById('closeVerificationModal').addEventListener('click', () => this.hideModal('verificationModal'));
+        
+        // Verification modal event listeners
+        this.closeVerificationModalBtn.addEventListener('click', () => {
+          this.hideModal('verificationModal');
+          // Optionally, reset signup form or go back to signup modal
+          this.pendingVerification = null; // Clear pending data
+        });
+        this.cancelVerificationBtn.addEventListener('click', () => {
+          this.hideModal('verificationModal');
+          this.pendingVerification = null; // Clear pending data
+        });
+        this.verifyCodeBtn.addEventListener('click', () => this.verifyCode());
+        this.resendCodeLink.addEventListener('click', (e) => {
+          e.preventDefault();
+          this.sendVerificationCode();
+        });
+
         document.getElementById('cancelBooking').addEventListener('click', () => this.hideModal('bookingModal'));
         document.getElementById('confirmBooking').addEventListener('click', () => this.submitBooking());
         document.getElementById('cancelAddMoney').addEventListener('click', () => this.hideModal('addMoneyModal'));
         document.getElementById('processPayment').addEventListener('click', () => this.processPayment());
         document.getElementById('cancelForgotPassword').addEventListener('click', () => this.hideModal('forgotPasswordModal'));
         document.getElementById('sendResetLink').addEventListener('click', () => this.sendResetLink());
-        document.getElementById('cancelVerification').addEventListener('click', () => this.hideModal('verificationModal'));
-        document.getElementById('verifyCodeBtn').addEventListener('click', () => this.verifyCode());
-        document.getElementById('resendCode').addEventListener('click', (e) => {
-          e.preventDefault();
-          this.sendVerificationCode();
-        });
         
         // Wallet actions
         document.getElementById('addMoneyBtn').addEventListener('click', () => this.showAddMoneyModal());
@@ -2894,8 +2907,8 @@
       }
       
       validatePhone(phone) {
-        // Simple Nigerian phone validation
-        return /^[0]?[789]\d{9}$/.test(phone);
+        // Simple Nigerian phone validation (starts with 07, 08, 09 followed by 9 digits)
+        return /^(0|\+234)[789]\d{9}$/.test(phone);
       }
       
       validateNin(nin) {
@@ -2943,7 +2956,7 @@
         
         // Check if user exists in localStorage
         const users = JSON.parse(localStorage.getItem('users')) || [];
-        const user = users.find(u => u.email === email);
+        const user = users.find(u => u.email === email); // Assuming email is stored for login
         
         if (!user) {
           emailError.textContent = 'No account found with this email';
@@ -2963,7 +2976,7 @@
         this.userData = {
           id: user.id,
           name: user.name,
-          email: user.email,
+          email: user.email, // Assuming email is part of user data for login
           phone: user.phone,
           type: user.type
         };
@@ -3018,7 +3031,7 @@
         
         if (!isValid) return;
         
-        // In a real app, you would send this to your backend
+        // Store pending signup data before verification
         this.pendingVerification = {
           type: 'client',
           name,
@@ -3027,19 +3040,20 @@
           password
         };
         
-        this.showVerificationModal(phone);
-        this.sendVerificationCode(phone);
+        this.hideModal('signupModal'); // Hide signup modal
+        this.showVerificationModal(phone); // Show verification modal
+        this.sendVerificationCode(); // Send the code
       }
       
       artisanSignup() {
         const name = document.getElementById('artisanName').value;
         const phone = document.getElementById('artisanPhone').value;
+        const nin = document.getElementById('artisanNin').value; // Added NIN for artisan
         const service = document.getElementById('artisanService').value;
         const experience = document.getElementById('artisanExperience').value;
         const location = document.getElementById('artisanLocation').value;
         const password = document.getElementById('artisanPassword').value;
         const confirm = document.getElementById('artisanConfirm').value;
-        const nin = document.getElementById('artisanNin').value;
         
         // Reset errors
         document.querySelectorAll('#artisanSignupForm .form-error').forEach(el => {
@@ -3058,8 +3072,8 @@
           document.getElementById('artisanPhoneError').style.display = 'block';
           isValid = false;
         }
-        
-        if (!nin || !this.validateNin(nin)) {
+
+        if (!nin || !this.validateNin(nin)) { // Validate NIN for artisan
           document.getElementById('artisanNinError').style.display = 'block';
           isValid = false;
         }
@@ -3091,64 +3105,37 @@
         
         if (!isValid) return;
         
-        // In a real app, you would send this to your backend
+        // Store pending signup data before verification
         this.pendingVerification = {
           type: 'artisan',
           name,
           phone,
+          nin, // Store NIN for artisan
           service,
           experience: parseInt(experience),
           location,
-          password,
-          nin
+          password
         };
         
-        this.showVerificationModal(phone);
-        this.sendVerificationCode(phone);
+        this.hideModal('signupModal'); // Hide signup modal
+        this.showVerificationModal(phone); // Show verification modal
+        this.sendVerificationCode(); // Send the code
       }
       
       showVerificationModal(phone) {
         document.getElementById('verificationPhone').textContent = phone;
+        document.getElementById('verificationCode').value = ''; // Clear previous code
+        document.getElementById('verificationCodeError').style.display = 'none'; // Hide error
         this.showModal('verificationModal');
       }
       
-      async sendVerificationCode(phone) {
-        // Generate a 6-digit code
-        this.verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-        
-        try {
-          // In a real app, you would call your backend API to send the SMS
-          // This is a mock implementation
-          
-          // Simulate API call to Twilio
-          console.log(`Sending verification code to ${phone}`);
-          
-          // Mock Twilio API call
-          const response = await this.mockTwilioSendSMS(
-            phone,
-            `Your Artisan Gateway verification code is: ${this.verificationCode}`
-          );
-          
-          if (response.success) {
-            this.showNotification('Verification code sent!');
-          } else {
-            this.showNotification('Failed to send verification code. Please try again.');
-          }
-        } catch (error) {
-          console.error('Error sending verification code:', error);
-          this.showNotification('Error sending verification code. Please try again.');
-        }
-      }
-      
-      // Mock Twilio SMS sending function
-      mockTwilioSendSMS(to, body) {
-        return new Promise((resolve) => {
-          // Simulate network delay
-          setTimeout(() => {
-            console.log(`Mock SMS sent to ${to}: ${body}`);
-            resolve({ success: true });
-          }, 1000);
-        });
+      sendVerificationCode() {
+        // In a real app, this would involve an API call to your backend
+        // Your backend would then use Twilio to send the SMS.
+        // For this demo, we generate a random 6-digit code client-side.
+        this.generatedVerificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+        console.log(`[DEMO] Sending verification code: ${this.generatedVerificationCode} to ${this.pendingVerification.phone}`); // For debugging
+        this.showNotification(`Verification code sent to ${this.pendingVerification.phone}. Code: ${this.generatedVerificationCode}`);
       }
       
       verifyCode() {
@@ -3163,8 +3150,9 @@
           return;
         }
         
-        // In a real app, you would verify the code with your backend
-        if (code === this.verificationCode) {
+        // In a real app, you would send this code to your backend for verification
+        // Your backend would compare it with the code stored for the user.
+        if (code === this.generatedVerificationCode) {
           this.completeSignup();
         } else {
           codeError.textContent = 'Invalid verification code';
@@ -3175,24 +3163,22 @@
       completeSignup() {
         const userData = this.pendingVerification;
         
-        // In a real app, this would be an API call to your backend
+        // In a real app, this would be an API call to your backend to finalize registration
         const users = JSON.parse(localStorage.getItem('users')) || [];
         const newUser = {
           id: Date.now().toString(),
           type: userData.type,
           name: userData.name,
           phone: userData.phone,
+          nin: userData.nin, // Include NIN in stored user data
           password: userData.password, // In a real app, this would be hashed
           createdAt: new Date().toISOString()
         };
         
-        if (userData.type === 'client') {
-          newUser.nin = userData.nin;
-        } else {
+        if (userData.type === 'artisan') { // Only add service, experience, location for artisans
           newUser.service = userData.service;
           newUser.experience = userData.experience;
           newUser.location = userData.location;
-          newUser.nin = userData.nin;
         }
         
         users.push(newUser);
@@ -3211,12 +3197,13 @@
         localStorage.setItem('userData', JSON.stringify(this.userData));
         
         this.hideModal('verificationModal');
-        this.hideAuthModal();
+        this.hideAuthModal(); // Ensure signup modal is also hidden
         this.updateAuthUI();
         this.showNotification('Account created successfully!');
         
-        // Clear pending verification
+        // Clear pending verification data
         this.pendingVerification = null;
+        this.generatedVerificationCode = '';
       }
       
       logout() {
