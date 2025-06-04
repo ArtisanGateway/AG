@@ -286,7 +286,8 @@
     }
     
     .form-group input,
-    .form-group select {
+    .form-group select,
+    .form-group textarea { /* Added textarea */
       width: 100%;
       padding: 10px;
       border: 1px solid var(--border-color);
@@ -297,10 +298,16 @@
     }
     
     .form-group input:focus,
-    .form-group select:focus {
+    .form-group select:focus,
+    .form-group textarea:focus { /* Added textarea */
       border-color: var(--primary);
       outline: none;
       box-shadow: 0 0 0 2px rgba(255,140,0,0.2);
+    }
+
+    .form-group textarea {
+      min-height: 80px;
+      resize: vertical;
     }
     
     .form-error {
@@ -1389,13 +1396,116 @@
       padding: 10px 20px;
       border-radius: 5px;
       box-shadow: 0 3px 10px rgba(0,0,0,0.2);
-      z-index: 2000;
+      z-index: 9999; /* Increased z-index to ensure it's always on top */
       display: none;
       animation: slideIn 0.3s ease-out;
     }
     
     .notification.show {
       display: block;
+    }
+
+    /* Profile Edit Specific Styles */
+    .profile-edit-container {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .profile-edit-pic-wrapper {
+      position: relative;
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      overflow: hidden;
+      margin: 0 auto 15px;
+      border: 3px solid var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--light-gray); /* Placeholder background */
+    }
+
+    .profile-edit-pic {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .profile-edit-pic-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      color: var(--white);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      cursor: pointer;
+    }
+
+    .profile-edit-pic-wrapper:hover .profile-edit-pic-overlay {
+      opacity: 1;
+    }
+
+    .profile-edit-pic-overlay i {
+      font-size: 2rem;
+      margin-bottom: 5px;
+    }
+
+    .profile-edit-pic-input {
+      display: none;
+    }
+
+    .profile-edit-name {
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .profile-edit-form .form-group {
+      text-align: left; /* Align form labels/inputs to left */
+    }
+
+    /* Privacy Policy specific styles */
+    .privacy-content {
+      max-height: 40vh; /* Limit height for scrollability */
+      overflow-y: auto;
+      padding-right: 10px; /* Space for scrollbar */
+      margin-bottom: 20px;
+    }
+
+    .privacy-content h3 {
+      margin-top: 15px;
+      margin-bottom: 8px;
+    }
+
+    .privacy-content p, .privacy-content ul {
+      margin-bottom: 10px;
+      font-size: 0.95rem;
+      color: var(--text-color);
+    }
+
+    .privacy-content ul {
+      list-style-type: disc;
+      margin-left: 20px;
+    }
+
+    .privacy-agreement {
+      display: flex;
+      align-items: center;
+      margin-top: 20px;
+      margin-bottom: 10px;
+      font-size: 0.95rem;
+    }
+
+    .privacy-agreement input[type="checkbox"] {
+      margin-right: 10px;
+      width: auto; /* Override form-group input width */
     }
   </style>
 </head>
@@ -1945,7 +2055,135 @@
     </div>
   </div>
 
-  <!-- 13. About Page -->
+  <!-- 13. Privacy Policy Modal -->
+  <div class="modal" id="privacyPolicyModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Privacy Policy & Terms of Service</h3>
+        <button class="modal-close" id="closePrivacyPolicyModal" aria-label="Close modal">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="privacy-content">
+          <h3>1. Data Collection & Use</h3>
+          <p>Artisan Hub collects personal information such as your name, phone number, NIN, location, and service preferences (for artisans) to provide and improve our services. Your live location is required while using the app to facilitate connections with nearby artisans/clients and to provide relevant, location-based services.</p>
+          
+          <h3>2. Data Sharing</h3>
+          <p>We may share your information with other users (e.g., your location with an artisan you've booked) and third-party service providers necessary for app functionality (e.g., payment processors). We do not sell your personal data to third parties for marketing purposes.</p>
+
+          <h3>3. Security</h3>
+          <p>We implement industry-standard security measures to protect your data. However, no method of transmission over the Internet or electronic storage is 100% secure. While we strive to use commercially acceptable means to protect your personal information, we cannot guarantee its absolute security.</p>
+
+          <h3>4. User Responsibilities</h3>
+          <p>You are responsible for maintaining the confidentiality of your account password and for all activities that occur under your account. Please notify us immediately of any unauthorized use of your account.</p>
+
+          <h3>5. Disclaimer of Liability</h3>
+          <p>Artisan Hub provides a platform to connect clients and artisans. We do not directly employ artisans or guarantee the quality of their work. While we strive to vet our users, we are not responsible for disputes, damages, or issues arising from interactions between clients and artisans. **Artisan Hub cannot be sued by the client or artisan for any reason related to the use of this platform.**</p>
+          
+          <h3>6. Changes to Policy</h3>
+          <p>We may update our Privacy Policy and Terms of Service from time to time. We will notify you of any changes by posting the new policy on this page.</p>
+        </div>
+        <div class="privacy-agreement">
+          <input type="checkbox" id="privacyAgreeCheckbox">
+          <label for="privacyAgreeCheckbox">I have read and agree to the Privacy Policy & Terms of Service</label>
+          <div class="form-error" id="privacyAgreeError" style="display: none;">You must agree to the policy to continue.</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="action-btn" id="cancelPrivacyPolicy">Cancel</button>
+        <button class="action-btn book-btn" id="agreePrivacyPolicyBtn">Agree and Continue</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 14. Edit Client Profile Modal -->
+  <div class="modal" id="editClientProfileModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Edit Client Profile</h3>
+        <button class="modal-close" id="closeEditClientProfileModal" aria-label="Close modal">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="profile-edit-container">
+          <label for="clientProfilePicInput" class="profile-edit-pic-wrapper">
+            <img src="https://placehold.co/120x120/dddddd/666666?text=Profile" alt="Profile Picture" class="profile-edit-pic" id="clientProfilePic" onerror="this.src='https://placehold.co/120x120/dddddd/666666?text=Profile';">
+            <div class="profile-edit-pic-overlay">
+              <i class="fas fa-camera"></i>
+              <span>Change Photo</span>
+            </div>
+          </label>
+          <input type="file" id="clientProfilePicInput" class="profile-edit-pic-input" accept="image/*">
+          <div class="profile-edit-name" id="clientProfileNameDisplay"></div>
+        </div>
+        <form class="profile-edit-form" id="clientProfileForm">
+          <div class="form-group">
+            <label for="clientProfileLocation">Location</label>
+            <input type="text" id="clientProfileLocation" placeholder="Your current location">
+          </div>
+          <div class="form-group">
+            <label for="clientProfileBio">Bio</label>
+            <textarea id="clientProfileBio" placeholder="Tell us about yourself..."></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="action-btn" id="cancelClientProfileEdit">Cancel</button>
+        <button class="action-btn book-btn" id="saveClientProfile">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 15. Edit Artisan Profile Modal -->
+  <div class="modal" id="editArtisanProfileModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Edit Artisan Profile</h3>
+        <button class="modal-close" id="closeEditArtisanProfileModal" aria-label="Close modal">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="profile-edit-container">
+          <label for="artisanProfilePicInput" class="profile-edit-pic-wrapper">
+            <img src="https://placehold.co/120x120/dddddd/666666?text=Profile" alt="Profile Picture" class="profile-edit-pic" id="artisanProfilePic" onerror="this.src='https://placehold.co/120x120/dddddd/666666?text=Profile';">
+            <div class="profile-edit-pic-overlay">
+              <i class="fas fa-camera"></i>
+              <span>Change Photo</span>
+            </div>
+          </label>
+          <input type="file" id="artisanProfilePicInput" class="profile-edit-pic-input" accept="image/*">
+          <div class="profile-edit-name" id="artisanProfileNameDisplay"></div>
+        </div>
+        <form class="profile-edit-form" id="artisanProfileForm">
+          <div class="form-group">
+            <label for="artisanProfileService">Service Type</label>
+            <input type="text" id="artisanProfileService" readonly>
+          </div>
+          <div class="form-group">
+            <label for="artisanProfileLocation">Location</label>
+            <input type="text" id="artisanProfileLocation" placeholder="Your current location">
+          </div>
+          <div class="form-group">
+            <label for="artisanProfileBio">Bio</label>
+            <textarea id="artisanProfileBio" placeholder="Describe your services and experience..."></textarea>
+          </div>
+          <div class="form-group">
+            <label for="artisanProfileExperience">Years of Experience</label>
+            <input type="number" id="artisanProfileExperience" min="0" placeholder="Years of experience">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="action-btn" id="cancelArtisanProfileEdit">Cancel</button>
+        <button class="action-btn book-btn" id="saveArtisanProfile">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 16. About Page -->
   <div id="about-page" style="display: none;">
     <header>
       <div class="logo-container">
@@ -1981,7 +2219,7 @@
     </main>
   </div>
 
-  <!-- 14. Settings Page -->
+  <!-- 17. Settings Page -->
   <div id="settings-page" style="display: none;">
     <header>
       <div class="logo-container">
@@ -2029,7 +2267,7 @@
     </main>
   </div>
 
-  <!-- 15. Notification -->
+  <!-- 18. Notification -->
   <div class="notification" id="notification"></div>
 
   <!-- Bottom Navigation -->
@@ -2063,6 +2301,7 @@
         this.darkMode = localStorage.getItem('darkMode') === 'true';
         this.pendingVerification = null;
         this.generatedVerificationCode = ''; // Stores the generated code for client-side simulation
+        this.privacyPolicyAgreed = false; // Track privacy policy agreement
         
         // Initialize app
         this.init();
@@ -2143,6 +2382,38 @@
         this.verifyCodeBtn = document.getElementById('verifyCodeBtn');
         this.resendCodeLink = document.getElementById('resendCode');
         this.cancelVerificationBtn = document.getElementById('cancelVerification');
+
+        // Privacy Policy modal elements
+        this.privacyPolicyModal = document.getElementById('privacyPolicyModal');
+        this.closePrivacyPolicyModalBtn = document.getElementById('closePrivacyPolicyModal');
+        this.privacyAgreeCheckbox = document.getElementById('privacyAgreeCheckbox');
+        this.privacyAgreeError = document.getElementById('privacyAgreeError');
+        this.agreePrivacyPolicyBtn = document.getElementById('agreePrivacyPolicyBtn');
+        this.cancelPrivacyPolicyBtn = document.getElementById('cancelPrivacyPolicy');
+
+        // Edit Client Profile modal elements
+        this.editClientProfileModal = document.getElementById('editClientProfileModal');
+        this.closeEditClientProfileModalBtn = document.getElementById('closeEditClientProfileModal');
+        this.clientProfilePic = document.getElementById('clientProfilePic');
+        this.clientProfilePicInput = document.getElementById('clientProfilePicInput');
+        this.clientProfileNameDisplay = document.getElementById('clientProfileNameDisplay');
+        this.clientProfileLocationInput = document.getElementById('clientProfileLocation');
+        this.clientProfileBioInput = document.getElementById('clientProfileBio');
+        this.saveClientProfileBtn = document.getElementById('saveClientProfile');
+        this.cancelClientProfileEditBtn = document.getElementById('cancelClientProfileEdit');
+
+        // Edit Artisan Profile modal elements
+        this.editArtisanProfileModal = document.getElementById('editArtisanProfileModal');
+        this.closeEditArtisanProfileModalBtn = document.getElementById('closeEditArtisanProfileModal');
+        this.artisanProfilePic = document.getElementById('artisanProfilePic');
+        this.artisanProfilePicInput = document.getElementById('artisanProfilePicInput');
+        this.artisanProfileNameDisplay = document.getElementById('artisanProfileNameDisplay');
+        this.artisanProfileServiceInput = document.getElementById('artisanProfileService');
+        this.artisanProfileLocationInput = document.getElementById('artisanProfileLocation');
+        this.artisanProfileBioInput = document.getElementById('artisanProfileBio');
+        this.artisanProfileExperienceInput = document.getElementById('artisanProfileExperience');
+        this.saveArtisanProfileBtn = document.getElementById('saveArtisanProfile');
+        this.cancelArtisanProfileEditBtn = document.getElementById('cancelArtisanProfileEdit');
       }
       
       setupEventListeners() {
@@ -2240,7 +2511,6 @@
         // Verification modal event listeners
         this.closeVerificationModalBtn.addEventListener('click', () => {
           this.hideModal('verificationModal');
-          // Optionally, reset signup form or go back to signup modal
           this.pendingVerification = null; // Clear pending data
         });
         this.cancelVerificationBtn.addEventListener('click', () => {
@@ -2252,6 +2522,31 @@
           e.preventDefault();
           this.sendVerificationCode();
         });
+
+        // Privacy Policy event listeners
+        this.closePrivacyPolicyModalBtn.addEventListener('click', () => {
+          this.hideModal('privacyPolicyModal');
+          this.showModal('signupModal'); // Go back to signup
+          this.privacyAgreeCheckbox.checked = false; // Reset checkbox
+        });
+        this.cancelPrivacyPolicyBtn.addEventListener('click', () => {
+          this.hideModal('privacyPolicyModal');
+          this.showModal('signupModal'); // Go back to signup
+          this.privacyAgreeCheckbox.checked = false; // Reset checkbox
+        });
+        this.agreePrivacyPolicyBtn.addEventListener('click', () => this.handlePrivacyPolicyAgreement());
+
+        // Edit Profile modal event listeners
+        this.closeEditClientProfileModalBtn.addEventListener('click', () => this.hideModal('editClientProfileModal'));
+        this.cancelClientProfileEditBtn.addEventListener('click', () => this.hideModal('editClientProfileModal'));
+        this.saveClientProfileBtn.addEventListener('click', () => this.saveProfileChanges('client'));
+        this.clientProfilePicInput.addEventListener('change', (e) => this.handleProfilePicUpload(e.target.files[0], 'client'));
+
+        this.closeEditArtisanProfileModalBtn.addEventListener('click', () => this.hideModal('editArtisanProfileModal'));
+        this.cancelArtisanProfileEditBtn.addEventListener('click', () => this.hideModal('editArtisanProfileModal'));
+        this.saveArtisanProfileBtn.addEventListener('click', () => this.saveProfileChanges('artisan'));
+        this.artisanProfilePicInput.addEventListener('change', (e) => this.handleProfilePicUpload(e.target.files[0], 'artisan'));
+
 
         document.getElementById('cancelBooking').addEventListener('click', () => this.hideModal('bookingModal'));
         document.getElementById('confirmBooking').addEventListener('click', () => this.submitBooking());
@@ -2819,6 +3114,10 @@
         
         if (this.isLoggedIn && this.userData) {
           profileMenu.innerHTML = `
+            <div class="profile-menu-item" id="myProfileBtn">
+              <i class="fas fa-user-circle"></i>
+              <span>My Profile</span>
+            </div>
             <div class="profile-menu-item" id="logoutBtn">
               <i class="fas fa-sign-out-alt"></i>
               <span>Logout</span>
@@ -2834,6 +3133,7 @@
           `;
           
           // Add event listeners to new menu items
+          document.getElementById('myProfileBtn').addEventListener('click', () => this.showEditProfileModal());
           document.getElementById('logoutBtn').addEventListener('click', () => this.logout());
           document.getElementById('settingsBtn').addEventListener('click', () => this.showSettingsPage());
           document.getElementById('aboutBtn').addEventListener('click', () => this.showAboutPage());
@@ -2978,7 +3278,12 @@
           name: user.name,
           email: user.email, // Assuming email is part of user data for login
           phone: user.phone,
-          type: user.type
+          type: user.type,
+          profilePic: user.profilePic || 'https://placehold.co/120x120/dddddd/666666?text=Profile', // Default profile pic
+          location: user.location || '',
+          bio: user.bio || '',
+          service: user.service || '',
+          experience: user.experience || 0
         };
         
         localStorage.setItem('isLoggedIn', 'true');
@@ -3037,12 +3342,14 @@
           name,
           phone,
           nin,
-          password
+          password,
+          profilePic: 'https://placehold.co/120x120/dddddd/666666?text=Profile', // Default pic
+          location: '',
+          bio: ''
         };
         
         this.hideModal('signupModal'); // Hide signup modal
-        this.showVerificationModal(phone); // Show verification modal
-        this.sendVerificationCode(); // Send the code
+        this.showPrivacyPolicyModal(); // Show privacy policy
       }
       
       artisanSignup() {
@@ -3114,12 +3421,32 @@
           service,
           experience: parseInt(experience),
           location,
-          password
+          password,
+          profilePic: 'https://placehold.co/120x120/dddddd/666666?text=Profile', // Default pic
+          bio: ''
         };
         
         this.hideModal('signupModal'); // Hide signup modal
-        this.showVerificationModal(phone); // Show verification modal
-        this.sendVerificationCode(); // Send the code
+        this.showPrivacyPolicyModal(); // Show privacy policy
+      }
+
+      showPrivacyPolicyModal() {
+        this.hideAuthModal(); // Ensure signup modal is hidden
+        this.privacyAgreeCheckbox.checked = false; // Reset checkbox state
+        this.privacyAgreeError.style.display = 'none'; // Hide any previous error
+        this.showModal('privacyPolicyModal');
+      }
+
+      handlePrivacyPolicyAgreement() {
+        if (this.privacyAgreeCheckbox.checked) {
+          this.privacyAgreeError.style.display = 'none';
+          this.hideModal('privacyPolicyModal');
+          // Proceed to verification after agreement
+          this.showVerificationModal(this.pendingVerification.phone);
+          this.sendVerificationCode();
+        } else {
+          this.privacyAgreeError.style.display = 'block';
+        }
       }
       
       showVerificationModal(phone) {
@@ -3135,7 +3462,7 @@
         // For this demo, we generate a random 6-digit code client-side.
         this.generatedVerificationCode = Math.floor(100000 + Math.random() * 900000).toString();
         console.log(`[DEMO] Sending verification code: ${this.generatedVerificationCode} to ${this.pendingVerification.phone}`); // For debugging
-        this.showNotification(`Verification code sent to ${this.pendingVerification.phone}. Code: ${this.generatedVerificationCode}`);
+        this.showNotification(`Verification code sent to ${this.pendingVerification.phone}. Code: ${this.generatedVerificationCode}`, 2000); // Changed duration to 2000ms (2 seconds)
       }
       
       verifyCode() {
@@ -3172,13 +3499,15 @@
           phone: userData.phone,
           nin: userData.nin, // Include NIN in stored user data
           password: userData.password, // In a real app, this would be hashed
+          profilePic: userData.profilePic,
+          location: userData.location,
+          bio: userData.bio,
           createdAt: new Date().toISOString()
         };
         
         if (userData.type === 'artisan') { // Only add service, experience, location for artisans
           newUser.service = userData.service;
           newUser.experience = userData.experience;
-          newUser.location = userData.location;
         }
         
         users.push(newUser);
@@ -3186,12 +3515,7 @@
         
         // Login the new user
         this.isLoggedIn = true;
-        this.userData = {
-          id: newUser.id,
-          name: newUser.name,
-          phone: newUser.phone,
-          type: newUser.type
-        };
+        this.userData = newUser; // Set userData directly to the new user object
         
         localStorage.setItem('isLoggedIn', 'true');
         localStorage.setItem('userData', JSON.stringify(this.userData));
@@ -3228,10 +3552,121 @@
           this.showNotification('Please enter a valid email address');
           return;
         }
-        
         // In a real app, you would send a reset link to the email
         this.hideModal('forgotPasswordModal');
         this.showNotification('Password reset link sent to your email');
+      }
+
+      // Profile Management Functions
+      showEditProfileModal() {
+        if (!this.isLoggedIn || !this.userData) {
+          this.showNotification('Please log in to edit your profile.');
+          this.showAuthModal('login');
+          return;
+        }
+
+        this.profileMenu.classList.remove('show'); // Hide dropdown
+
+        if (this.userData.type === 'client') {
+          this.clientProfileNameDisplay.textContent = this.userData.name;
+          this.clientProfilePic.src = this.userData.profilePic || 'https://placehold.co/120x120/dddddd/666666?text=Profile';
+          this.clientProfileLocationInput.value = this.userData.location || '';
+          this.clientProfileBioInput.value = this.userData.bio || '';
+          this.showModal('editClientProfileModal');
+        } else if (this.userData.type === 'artisan') {
+          this.artisanProfileNameDisplay.textContent = this.userData.name;
+          this.artisanProfilePic.src = this.userData.profilePic || 'https://placehold.co/120x120/dddddd/666666?text=Profile';
+          this.artisanProfileServiceInput.value = this.userData.service || '';
+          this.artisanProfileLocationInput.value = this.userData.location || '';
+          this.artisanProfileBioInput.value = this.userData.bio || '';
+          this.artisanProfileExperienceInput.value = this.userData.experience || 0;
+          this.showModal('editArtisanProfileModal');
+        }
+      }
+
+      handleProfilePicUpload(file, userType) {
+        if (!file) return;
+
+        if (!file.type.match('image.*')) {
+          this.showNotification('Only image files are supported for profile pictures.');
+          return;
+        }
+
+        if (file.size > 2 * 1024 * 1024) { // 2MB limit for profile pics
+          this.showNotification('Profile picture size should be less than 2MB.');
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          if (userType === 'client') {
+            this.clientProfilePic.src = e.target.result;
+            this.userData.profilePic = e.target.result;
+          } else if (userType === 'artisan') {
+            this.artisanProfilePic.src = e.target.result;
+            this.userData.profilePic = e.target.result;
+          }
+          localStorage.setItem('userData', JSON.stringify(this.userData));
+          this.showNotification('Profile picture updated temporarily. Save to confirm.');
+        };
+        reader.readAsDataURL(file);
+      }
+
+      saveProfileChanges(userType) {
+        if (!this.isLoggedIn || !this.userData) {
+          this.showNotification('Error: User data not found.');
+          return;
+        }
+
+        let updated = false;
+
+        if (userType === 'client') {
+          const newLocation = this.clientProfileLocationInput.value;
+          const newBio = this.clientProfileBioInput.value;
+
+          if (this.userData.location !== newLocation) {
+            this.userData.location = newLocation;
+            updated = true;
+          }
+          if (this.userData.bio !== newBio) {
+            this.userData.bio = newBio;
+            updated = true;
+          }
+          this.hideModal('editClientProfileModal');
+        } else if (userType === 'artisan') {
+          const newLocation = this.artisanProfileLocationInput.value;
+          const newBio = this.artisanProfileBioInput.value;
+          const newExperience = parseInt(this.artisanProfileExperienceInput.value);
+
+          if (this.userData.location !== newLocation) {
+            this.userData.location = newLocation;
+            updated = true;
+          }
+          if (this.userData.bio !== newBio) {
+            this.userData.bio = newBio;
+            updated = true;
+          }
+          if (this.userData.experience !== newExperience && !isNaN(newExperience)) {
+            this.userData.experience = newExperience;
+            updated = true;
+          }
+          this.hideModal('editArtisanProfileModal');
+        }
+
+        if (updated) {
+          // In a real app, this would be an API call to update the backend
+          localStorage.setItem('userData', JSON.stringify(this.userData));
+          // Also update the main 'users' array in localStorage
+          let allUsers = JSON.parse(localStorage.getItem('users')) || [];
+          const userIndex = allUsers.findIndex(u => u.id === this.userData.id);
+          if (userIndex !== -1) {
+            allUsers[userIndex] = this.userData;
+            localStorage.setItem('users', JSON.stringify(allUsers));
+          }
+          this.showNotification('Profile updated successfully!');
+        } else {
+          this.showNotification('No changes detected.');
+        }
       }
       
       // Wallet System
